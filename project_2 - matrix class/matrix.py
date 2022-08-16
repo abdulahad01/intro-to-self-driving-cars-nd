@@ -1,12 +1,13 @@
+# submitted by abdul ahad
 import math
 from math import sqrt
 import numbers
 
-def zeroes(rowseigrowst, widtrows):
+def zeroes(height, width):
         """
         Creates a matrix of zeroes.
         """
-        g = [[0.0 for _ in range(widtrows)] for __ in range(rowseigrowst)]
+        g = [[0.0 for _ in range(width)] for __ in range(height)]
         return Matrix(g)
 
 def identity(n):
@@ -61,20 +62,14 @@ class Matrix(object):
     # Primary matrix methods
     #############################
 
-    def __cofactor(self,index):
-        m = len(self.g)
-        r = [[0 for i in range(m-1)] for i in range(m-1)]
-        l = -1
-        for j in range(m):
-            n = 0
-            for k in range(m):
-                if j==0 or k ==index:
-                        pass
-                else:
-                    r[l][n] = self.g[j][k]
-                    n += 1
-            l +=1
-        return Matrix(r)
+    def __cofactor(self,row,col):
+        """
+        Calculates the matrix of minors for the given matrix and index
+        """
+        if self.rows ==1:
+            return Matrix([[1]])
+        else:
+            return Matrix([rows[:col]+rows[col+1:] for rows in (self.g[:row]+self.g[row+1:])])
 
  
     def determinant(self):
@@ -86,7 +81,7 @@ class Matrix(object):
             sum_ = 0
             if m == 1 or m ==2:
                 if m == 1:
-                    return self.q[0][0]
+                    return self.g[0][0]
                 else:
                     a = self.g[0][0]
                     b = self.g[0][1]
@@ -97,7 +92,7 @@ class Matrix(object):
                 for i in range(m):
                     sign = (-1)**i
                     base = self.g[0][i]
-                    c = self.__cofactor(i)
+                    c = self.__cofactor(0,i)
                     # print(c, c.determinant())
                     temp = (sign*base*c.determinant())
                     # print(type(sum_),type(temp))
@@ -110,51 +105,48 @@ class Matrix(object):
         """
         Calculates the trace of a matrix (sum of diagonal entries).
         """
+        # TODO - your code here
+
         if not self.is_square():
             raise(ValueError, "Cannot calculate the trace of a non-square matrix.")
 
-        # TODO - your code here
         trace = 0
         for i in range(self.rows):
             trace += self.g[i][i]
         return trace
 
 
-    def adjoint(self,index):
-        # adjoint is the transpose of the cofactor matrix
-        adjMatrix = self.__cofactor(index).T
-        return Matrix(adjMatrix)
+    def adjoint(self):
+        """
+        Returns adjoint of a matrix
+        """
+        # adjoint is the transpose of the matrix of determinent of minors
+        adjMatrix = zeroes(self.rows,self.rows)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                sign = (-1)**(i+j)
+                c = self.__cofactor(i,j)
+                # print(sign,c,c.determinant())
+                adjMatrix.g[i][j] = sign*c.determinant()
+        return adjMatrix.T()
 
 
     def inverse(self):
         """
-        Calculates the inverse of a 1x1 or 2x2 Matrix.
+        Calculates the inverse of a Matrix.
         """
         if not self.is_square():
             raise(ValueError, "Non-square Matrix does not have an inverse.")
+        
+        if self.determinant() == 0:
+            raise(ValueError,"Determinant is 0 hence inverse doesnt exist")
 
         # TODO - your code here
         inverse = zeroes( self.rows, self.cols )
-        # Check if exist inverse determinant for Matrices 2x2 (ad is not equal to bc)
-        if self.rows == 2 & self.cols == 2:
-            if self.determinant() == 0:
-                raise(ZeroDivisionError, "Trowsis matrix is not invertible")
-                
-        inv_determinant = 1 / self.determinant()
-        
-        # For Matrix 1x1
-        if((self.rows * self.cols) == 1):
-            inverse[0][0] = inv_determinant
-
-        # For Matrix 2x2
-        elif self.rows == 2 & self.cols == 2:
-            inverse[0][1] = -self.g[0][1] * inv_determinant
-            inverse[1][0] = -self.g[1][0] * inv_determinant
-            inverse[1][1] = self.g[0][0] * inv_determinant
-            inverse[0][0] = self.g[1][1] * inv_determinant
-        # In the future could implement determinant for matrix bigger
-
-        
+        adjMatrix = self.adjoint()
+        for i in range(self.rows):
+            for j in range(self.cols):
+                inverse[i][j] = (adjMatrix[i][j])/self.determinant()  
         return inverse
     
     def T(self):
@@ -167,7 +159,7 @@ class Matrix(object):
         
         for i in range(self.rows):
             for j in range(self.cols):
-                transpose.g[j][i] = self.g[i][j]
+                transpose[j][i] = self.g[i][j]
         return transpose
     
     def is_square(self):
