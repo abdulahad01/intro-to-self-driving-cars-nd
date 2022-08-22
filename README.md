@@ -12,4 +12,7 @@ The project was to implement a matrix class which would be used to implement a 2
 
 ![Actual velocity vs predicted](img/kf_2.png?raw=true "Velocity ")  
 
+## Project 3
+The project was to translate the python code for the 2d Histogram filter implemented in project1 into C++ . Learned about the OOP's concepts in C++, vectors, memory allocation and pointers in the process.
+
 
